@@ -21,7 +21,7 @@ install(DIRECTORY
 urdf
 launch
 config
-worlds
+scripts
 DESTINATION share/${PROJECT_NAME}/
 )
 
@@ -33,6 +33,10 @@ install(
 install(
 PROGRAMS
 launch/robot_description_publisher.py
+scripts/ik_node.py
+scripts/fk_node.py
+scripts/kinematics.py
+scripts/movement_control.py
 DESTINATION lib/${PROJECT_NAME}
 )
 

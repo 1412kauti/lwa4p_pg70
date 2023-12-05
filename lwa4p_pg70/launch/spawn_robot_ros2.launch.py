@@ -118,10 +118,10 @@ def generate_launch_description():
     )
 
     # Lidar Velocity Controller Node
-    robot_lidar_controller_spawner = Node(
+    robot_endf_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["lidar_controller", "--controller-manager", "/controller_manager"],
+        arguments=["endf_controller", "--controller-manager", "/controller_manager"],
     )
 
     # Delay start of robot_controller after `joint_state_broadcaster`
@@ -132,6 +132,12 @@ def generate_launch_description():
         )
     )
 
+    delay_robot_endf_controller_spawner_after_joint_state_broadcaster_spawner = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=joint_state_broadcaster_spawner,
+            on_exit=[robot_endf_controller_spawner],
+        )
+    )
     # Static TF Transform
     tf=Node(
         package='tf2_ros',
@@ -154,6 +160,7 @@ def generate_launch_description():
             spawn_robot,
             joint_state_broadcaster_spawner,
             delay_robot_postion_controller_spawner_after_joint_state_broadcaster_spawner,
+            delay_robot_endf_controller_spawner_after_joint_state_broadcaster_spawner,            
             tf
         ]
     )
