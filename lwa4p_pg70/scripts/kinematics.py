@@ -113,29 +113,41 @@ class Kinematics:
 
     def joint_limits(self, joints):
         if joints[0] < -2*self.spi/3:
-            joints[0] = -2*self.spi/3
+            # joints[0] = -2*self.spi/3
+            pass
         elif joints[0] > 2*self.spi/3:
-            joints[0] = 2*self.spi/3
+            # joints[0] = 2*self.spi/3
+            pass
         if joints[1] < -0.95*self.spi:
-            joints[1] = -0.95*self.spi
+            # joints[1] = -0.95*self.spi
+            pass
         elif joints[1] > 0:
-            joints[1] = 0
+            # joints[1] = 0
+            pass
         if joints[2] < -0.463*self.spi:
-            joints[2] = -0.463*self.spi
+            # joints[2] = -0.463*self.spi
+            pass
         elif joints[2] > 0.48*self.spi:
-            joints[2] = 0.48*self.spi
+            # joints[2] = 0.48*self.spi
+            pass
         if joints[3] < -0.97*self.spi:
-            joints[3] = -0.97*self.spi
+            # joints[3] = -0.97*self.spi
+            pass
         elif joints[3] > 0.97*self.spi:
-            joints[3] = 0.97*self.spi
+            # joints[3] = 0.97*self.spi
+            pass
         if joints[4] < -3*self.spi/2:
-            joints[4] = -3*self.spi/2
+            # joints[4] = -3*self.spi/2
+            pass
         elif joints[4] > 3*self.spi/2:
-            joints[4] = 3*self.spi/2
+            # joints[4] = 3*self.spi/2
+            pass
         if joints[5] < -0.95*self.spi:
-            joints[5] = -0.95*self.spi
+            # joints[5] = -0.95*self.spi
+            pass
         elif joints[5] > 0.95*self.spi:
-            joints[5] = 0.95*self.spi
+            # joints[5] = 0.95*self.spi
+            pass
         return joints
 
     def i_kine(self, joints_init, target, error_trace=False, no_rotation=False, joint_lims=True):
@@ -189,6 +201,69 @@ class Kinematics:
 
 
         return (joints, e_trace) if error_trace else joints
+    
+    def calculate_circle_points(self, radius, num_points, plane_of_rotation='XY'):
+        if plane_of_rotation not in {'XY', 'XZ', 'YZ'}:
+            raise ValueError("Invalid plane_of_rotation. Choose from 'XY', 'XZ', or 'YZ'.")
+
+        points = []
+        for i in range(num_points):
+            angle = 2 * pi * i / num_points
+
+            if plane_of_rotation == 'XY':
+                x = radius * cos(angle)
+                y = radius * sin(angle)
+                z = 0
+            elif plane_of_rotation == 'XZ':
+                x = radius * cos(angle)
+                y = 0
+                z = radius * sin(angle)
+            else:  # plane_of_rotation == 'YZ'
+                x = 0
+                y = radius * cos(angle)
+                z = radius * sin(angle)
+
+            points.append((x, y, z))
+
+        return points
+
+    def draw_circle(self, radius, num_points=100, plane_of_rotation='XY'):
+        if plane_of_rotation not in {'XY', 'XZ', 'YZ'}:
+            raise ValueError("Invalid plane_of_rotation. Choose from 'XY', 'XZ', or 'YZ'.")
+
+        circle_points = self.calculate_circle_points(radius, num_points, plane_of_rotation)
+
+        # Plotting the robot arm
+        joints = np.array([[0.0], [-pi/2], [0.0], [pi/2], [0.0], [0.0]])
+        # self.plot_pose(joints)
+
+        # Plotting the circle
+        fig = plt.figure(figsize=(8, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        ax.set_xlim3d(-60, 60)
+        ax.set_ylim3d(-60, 60)
+        ax.set_zlim3d(0, 120)
+        ax.set_xlabel('X axis')
+        ax.set_ylabel('Y axis')
+        ax.set_zlabel('Z axis')
+
+        xs, ys, zs = zip(*circle_points)
+        # ax.plot(xs, ys, zs, label='Circle', color='r')
+        # ax.legend()
+        # compound_list = []
+        # result = []
+
+        # for i in range(len(xs)):
+        #     result = []
+        #     result.append(xs[i])
+        #     result.append(ys[i])
+        #     result.append(zs[i])
+        #     compound_list.append(result)
+        
+        # return compound_list 
+        return xs, ys, zs
+
+
 
 # q1, q2, q3, q4, q5, q6 = sp.symbols('q1 q2 q3 q4 q5 q6')
 # spi = sp.pi
@@ -236,6 +311,10 @@ def run1():
 
     new_j, e_trace = robot_arm.i_kine(joints, target, error_trace=True)
     print(new_j)
+    robot_arm.plot_pose(new_j, DH_params)
+    plt.figure(figsize=(8,8))
+    plt.plot(e_trace)
+    plt.title('Error Trace')
 
 def run2():
     q1, q2, q3, q4, q5, q6 = sp.symbols('q1 q2 q3 q4 q5 q6')
@@ -254,6 +333,40 @@ def run2():
 
     result = robot_arm.trans_EF_eval(joints)
     result = sp.Matrix(result)
+    robot_arm.plot_pose([ 0.24997842,-0.90489976, 0.0927195,3.04734487,-2.02265731, 0.22542674])
     print(result)
 # run()
-run2()
+# run2()
+def run_with_circle():
+    q1, q2, q3, q4, q5, q6 = sp.symbols('q1 q2 q3 q4 q5 q6')
+    spi = sp.pi
+
+    DH_params = [[0, q1, 0, spi/2],
+                [0, q2+spi/2, 0.350, spi],
+                [0, q3+spi/2, 0, spi/2],
+                [0.350, q4, 0, -spi/2],
+                [0, q5, 0, spi/2],
+                [0, q6, 0, 0]]
+
+    robot_arm = Kinematics(DH_params)
+    points = robot_arm.draw_circle(radius=10, num_points=100, plane_of_rotation='XY')
+
+    joints = np.array([[0.0], [-pi/2], [0.0], [pi/2], [0.0], [0.0]])
+    for i in range(len(points)):
+        target = np.array([[1, 0, 0, points[i][0]],
+                        [0, -1, 0, points[i][1]],
+                        [0, 0, -1, points[i][2]],
+                        [0, 0, 0, 1]])
+
+        new_j, e_trace = robot_arm.i_kine(joints, target, error_trace=True)
+        new_j = new_j.flatten().tolist()
+        print(new_j)
+
+    # Draw the circle in the XY plane
+    
+
+    # plt.figure(figsize=(8, 8))
+    # plt.plot(e_trace)
+    # plt.title('Error Trace')
+
+# run_with_circle()

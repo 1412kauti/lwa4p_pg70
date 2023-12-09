@@ -35,8 +35,10 @@ PROGRAMS
 launch/robot_description_publisher.py
 scripts/ik_node.py
 scripts/fk_node.py
+scripts/draw_circle.py
 scripts/kinematics.py
 scripts/movement_control.py
+scripts/movement_control_draw.py
 DESTINATION lib/${PROJECT_NAME}
 )
 
